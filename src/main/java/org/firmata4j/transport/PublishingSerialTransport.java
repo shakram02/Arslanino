@@ -27,24 +27,30 @@ import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
+import org.firmata4j.fsm.Parser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import org.firmata4j.fsm.Parser;
-
 /**
  * Allows connections over the serial interface.
  *
  * @author Ali Kia
  */
-public class SerialTransport extends AbstractSerialTransport {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SerialTransport.class);
+public class PublishingSerialTransport extends AbstractSerialTransport {
+    private final Consumer<byte[]> eventEmitter;
+    private static final Logger LOGGER = LoggerFactory.getLogger(PublishingSerialTransport.class);
 
-    public SerialTransport(String portName) {
+    public PublishingSerialTransport(String portName, Consumer<byte[]> eventEmitter) {
         super(portName);
+        this.eventEmitter = eventEmitter;
+    }
+
+    @Override
+    public void setParser(Parser parser) {
+        this.parser = parser;
     }
 
     @Override
@@ -52,10 +58,17 @@ public class SerialTransport extends AbstractSerialTransport {
         // queueing data from input buffer to processing by FSM logic
         if (event.isRXCHAR() && event.getEventValue() > 0) {
             try {
-                parser.parse(port.readBytes());
+                // TODO: send those bytes to the remote device
+                // TODO: on the other end, those bytes are inserted to the parser
+                this.eventEmitter.accept(port.readBytes());
             } catch (SerialPortException ex) {
                 LOGGER.error("Cannot read from device", ex);
             }
         }
     }
+
+    public void handleEvent(byte[] bytes) {
+        parser.parse(bytes);
+    }
+
 }

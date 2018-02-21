@@ -24,15 +24,14 @@
 package org.firmata4j.firmata;
 
 import org.firmata4j.*;
-import org.firmata4j.firmata.FirmataI2CDevice;
-import org.firmata4j.firmata.FirmataMessageFactory;
-import org.firmata4j.firmata.FirmataPin;
 import org.firmata4j.firmata.parser.FirmataParser;
 import org.firmata4j.firmata.parser.FirmataToken;
-import org.firmata4j.transport.SerialTransport;
-import org.firmata4j.fsm.Parser;
 import org.firmata4j.fsm.Event;
 import org.firmata4j.fsm.FiniteStateMachine;
+import org.firmata4j.fsm.Parser;
+import org.firmata4j.transport.SerialTransport;
+import org.firmata4j.transport.TransportInterface;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -50,10 +49,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.firmata4j.firmata.parser.FirmataToken.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
-
-import org.firmata4j.transport.TransportInterface;
-import org.slf4j.Logger;
-
 /**
  * Implements {@link IODevice} that is using Firmata protocol.
  *
@@ -62,7 +57,7 @@ import org.slf4j.Logger;
 public class FirmataDevice implements IODevice {
 
     private Parser parser;
-    private TransportInterface transport;
+    protected TransportInterface transport;
     private final Set<IODeviceEventListener> listeners = Collections.synchronizedSet(new LinkedHashSet<IODeviceEventListener>());
     private final List<org.firmata4j.firmata.FirmataPin> pins = Collections.synchronizedList(new ArrayList<org.firmata4j.firmata.FirmataPin>());
     private final AtomicBoolean started = new AtomicBoolean(false);
