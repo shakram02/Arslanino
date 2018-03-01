@@ -48,5 +48,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" name="kt-events" level="project" />
   </component>
 </module>
