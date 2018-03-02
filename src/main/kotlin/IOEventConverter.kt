@@ -1,5 +1,6 @@
 import org.firmata4j.IOEvent
 import org.firmata4j.Pin
+import java.lang.IllegalArgumentException
 
 class IOEventConverter {
     // TODO: Add pin mapping
@@ -27,7 +28,44 @@ enum class PinMode {
     INPUT,
     OUTPUT,
     PWM,
-    ANALOG_INPUT
+    ANALOG;
+
+    companion object {
+        fun fromString(str: String): PinMode {
+            return when (str.toUpperCase()) {
+                "INPUT" -> INPUT
+                "ANALOG" -> ANALOG
+                else -> throw IllegalArgumentException("Invalid Enum Value $str")
+            }
+        }
+    }
+
+    fun toFirmataMode(): Pin.Mode {
+        return when (this) {
+            OUTPUT -> Pin.Mode.OUTPUT
+            PWM -> Pin.Mode.PWM
+            INPUT -> Pin.Mode.INPUT
+            else -> TODO("Can't convert $this")
+        }
+    }
+
 }
 
-data class ConvertedEvent(val pinNumber: Byte, val mode: PinMode, val value: Long, val timestamp: Long)
+data class ConvertedEvent(val pinNumber: Byte, val mode: PinMode, val value: Long, val timestamp: Long) {
+    override fun toString(): String {
+        return "$pinNumber-$mode-$value-$timestamp"
+    }
+
+    fun serialize(): ByteArray {
+        return toString().toByteArray()
+    }
+
+    companion object {
+        fun deserialize(serialized: ByteArray): ConvertedEvent {
+            val string = String(serialized)
+            val values = string.split("-")
+            return ConvertedEvent(values[0].toByte(), PinMode.fromString(values[1]),
+                    values[2].toLong(), values[3].toLong())
+        }
+    }
+}
