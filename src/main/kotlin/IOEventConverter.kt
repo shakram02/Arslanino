@@ -56,6 +56,8 @@ data class ConvertedEvent(val pinNumber: Byte, val mode: PinMode, val value: Lon
         return "$pinNumber-$mode-$value-$timestamp"
     }
 
+
+    // TODO find a better serialization mechanism
     fun serialize(): ByteArray {
         return toString().toByteArray()
     }
