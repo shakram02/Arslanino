@@ -1,3 +1,4 @@
+import control.DeviceEventEmitter
 import org.firmata4j.Pin
 import org.firmata4j.firmata.FirmataDevice
 
