@@ -1,3 +1,4 @@
+import control.ConvertedEvent
 import control.DeviceEventEmitter
 import networking.ArduinoChannel
 import org.firmata4j.Pin
@@ -6,16 +7,21 @@ import org.firmata4j.firmata.FirmataDevice
 
 fun main(args: Array<String>) {
     // TODO: on the other end, those bytes are inserted to the parser
-//    val device = FirmataDevice("/dev/ttyACM0") // construct the Firmata device instance using the name of a port
-//
-//    val emitter = DeviceEventEmitter()
-//    emitter.onPinChange += { e -> println(">>> $e") }
-//    emitter.onStop += { println("Stopped") }
-//
-//    device.addEventListener(emitter)
-//    device.start()
-//    device.ensureInitializationIsDone()
-//    device.getPin(4).mode = Pin.Mode.INPUT
+    val device = FirmataDevice("/dev/ttyACM0") // construct the Firmata device instance using the name of a port
+    val emitter = DeviceEventEmitter()
+
+    val ip = "localhost"
+    val port = 55555
+    val arduino = ArduinoChannel(ip, port)
+    arduino.onReceived += { e -> println(ConvertedEvent.deserialize(e.bytes)) }
+
+    emitter.onPinChange += { e -> arduino.send(e.serialize()) }
+    emitter.onStop += { println("Stopped") }
+
+    device.addEventListener(emitter)
+    device.start()
+    device.ensureInitializationIsDone()
+    device.getPin(4).mode = Pin.Mode.INPUT
 
     println("Hit enter to terminate")
     readLine()
