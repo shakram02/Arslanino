@@ -1,3 +1,5 @@
+@file:JvmName("Main")
+
 import control.ConvertedEvent
 import control.DeviceEventEmitter
 import networking.ArduinoChannel
