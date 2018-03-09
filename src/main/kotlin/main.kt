@@ -8,15 +8,54 @@ import org.firmata4j.firmata.FirmataDevice
 
 
 fun main(args: Array<String>) {
+    if (args.isNotEmpty() && args.size != 5) {
+        println("Usage\nremoteduino SERIAL-PORT LOCAL-IP LOCAL-PORT REMOTE-IP REMOTE-PORT")
+        println("defaults: /dev/ttyACM0 localhost 55555")
+        return
+    }
+
+    val serialPortName: String = if (args.isEmpty()) {
+        "/dev/ttyACM0"
+    } else {
+        args[0]
+    }
+
+    val ip: String = if (args.isEmpty()) {
+        "localhost"
+    } else {
+        args[1]
+    }
+
+    val portNumber: Int = if (args.isEmpty()) {
+        55555
+    } else {
+        args[2].toInt()
+    }
+
+    val remoteIp: String = if (args.isEmpty()) {
+        "localhost"
+    } else {
+        args[3]
+    }
+
+    val remotePort: Int = if (args.isEmpty()) {
+        55556
+    } else {
+        args[4].toInt()
+    }
+
+
     // TODO: on the other end, those bytes are inserted to the parser
-    val device = FirmataDevice("/dev/ttyACM0") // construct the Firmata device instance using the name of a port
+    val device = FirmataDevice(serialPortName) // construct the Firmata device instance using the name of a port
     val emitter = DeviceEventEmitter()
 
-    val ip = "localhost"
-    val port = 55555
-    val arduino = ArduinoChannel(ip, port)
+    val arduino = ArduinoChannel(ip, portNumber)
     arduino.onReceived += { e -> println(ConvertedEvent.deserialize(e.bytes)) }
+    println("Press enter to connect")
+    readLine()
+    arduino.connect(remoteIp, remotePort)
 
+    // Create mapping for pin numbers
     emitter.onPinChange += { e -> arduino.send(e.serialize()) }
     emitter.onStop += { println("Stopped") }
 
@@ -27,5 +66,5 @@ fun main(args: Array<String>) {
 
     println("Hit enter to terminate")
     readLine()
-//    device.stop()
+    device.stop()
 }
