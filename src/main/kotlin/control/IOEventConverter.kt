@@ -1,16 +1,27 @@
 package control
 
+import kotlinx.coroutines.experimental.channels.NULL_VALUE
 import org.firmata4j.IOEvent
 import org.firmata4j.Pin
 import java.lang.IllegalArgumentException
 
 class IOEventConverter {
     // TODO: Add pin mapping
+    private val pinConverter = HashMap<Byte, Byte>()
 
     fun convert(e: IOEvent): ConvertedEvent {
         val pin = e.pin
+
         // TODO: match pin numbers on different types
-        return convertWithMapping(e, pin.index)
+        val convertedPin = pin.index
+
+        if(pinConverter.containsKey(pin.index)){
+            val convertedPin = pinConverter[pin.index]
+        } else {
+            throw IllegalArgumentException("pin($pin) is not mapped to any pins")
+        }
+
+        return convertWithMapping(e, convertedPin)
     }
 
 
@@ -23,6 +34,10 @@ class IOEventConverter {
         }
 
         return ConvertedEvent(outPin, outMode, pin.value, e.timestamp)
+    }
+
+    public fun addPinMapping(myPin: Byte, theirPin: Byte) {
+        pinConverter[myPin] = theirPin
     }
 }
 

@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
     }
 
     val serialPortName: String = if (args.isEmpty()) {
-        "/dev/ttyACM0"
+        "COM3"
     } else {
         args[0]
     }
@@ -25,6 +25,7 @@ fun main(args: Array<String>) {
     } else {
         args[1]
     }
+
 
     val portNumber: Int = if (args.isEmpty()) {
         55555

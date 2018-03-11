@@ -59,4 +59,9 @@ class DeviceEventEmitter : IODeviceEventListener {
         println("Message Received:" + message)  // TODO this will need to be implemented
     }
 
+    fun addPinMapping(myPin: Byte, theirPin: Byte) {
+        converter.addPinMapping(myPin, theirPin)
+    }
+
+
 }
