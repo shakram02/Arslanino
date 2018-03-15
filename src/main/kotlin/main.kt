@@ -44,46 +44,55 @@ fun main(args: Array<String>) {
     } else {
         args[4].toInt()
     }
-    
+
 
     // TODO: on the other end, those bytes are inserted to the parser
     val device = FirmataDevice(serialPortName) // construct the Firmata device instance using the name of a port
     val emitter = DeviceEventEmitter()
-    
 
 
     val arduino = ArduinoChannel(ip, portNumber)
-    arduino.onReceived += { e -> println(ConvertedEvent.deserialize(e.bytes)) }
+
 
     println("My port: $portNumber")
     println("My serial port: $serialPortName")
 
 
-
     // Create mapping for pin numbers
-    
+
+
+    emitter.onPinChange += { e ->
+        println("Sending to remote $e")
+        arduino.send(e.serialize())
+    }
+
+    emitter.onStop += { println("Stopped") }
+    println("Press enter to connect")
+    readLine()
+    arduino.connect(remoteIp, remotePort)
 
     device.addEventListener(emitter)
     device.start()
     device.ensureInitializationIsDone()
 
-    emitter.onPinChange += { e -> arduino.send(e.serialize()) }
-    emitter.onStop += { println("Stopped") }
-    println("Press enter to connect")
-    readLine()
-    arduino.connect(remoteIp, remotePort)   
-    if (serialPortName == "COM7") {
+    if (serialPortName == "/dev/ttyUSB0") {
         emitter.addPinMapping(4, 13)
-        device.getPin(4).setMode(Pin.Mode.INPUT)
-        val value = device.getPin(4).getValue()
-        println("Pin 4 value = $value") 
-        device.getPin(13).setMode(Pin.Mode.OUTPUT)
-        device.getPin(13).setValue(255)
+        val pin = device.getPin(4)
+        pin.mode = Pin.Mode.INPUT
         println("My pin is 4")
-    
+
     } else {
-        emitter.addPinMapping(13, 4)
-        device.getPin(13).setMode(Pin.Mode.OUTPUT)
+        arduino.onReceived += { e ->
+            run {
+                val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
+                println(receivedConverted)
+
+                val pin = device.getPin(receivedConverted.pinNumber.toInt())
+                pin.mode = receivedConverted.mode.toFirmataMode()
+                pin.value = receivedConverted.value
+            }
+        }
+
         println("My pin is 13")
     }
     println("Hit enter to terminate")

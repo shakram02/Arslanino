@@ -15,9 +15,9 @@ class IOEventConverter {
         // TODO: match pin numbers on different types
         println("Converting...")
         var convertedPin: Byte = pin.getIndex() as Byte
-        
 
-        if(pinConverter.containsKey(convertedPin)){
+
+        if (pinConverter.containsKey(convertedPin)) {
             convertedPin = pinConverter[convertedPin] as Byte
             println("convertedPin = $convertedPin")
         } else {
@@ -60,6 +60,7 @@ enum class PinMode {
             return when (str.toUpperCase()) {
                 "INPUT" -> INPUT
                 "ANALOG" -> ANALOG
+                "OUTPUT" -> OUTPUT
                 else -> throw IllegalArgumentException("Invalid Enum Value $str")
             }
         }
@@ -92,12 +93,12 @@ data class ConvertedEvent(val pinNumber: Byte, val mode: PinMode, val value: Lon
             val string = String(serialized)
             val values = string.split("-")
             val size = values.size
-            println(values)
+            println(serialized.contentToString())
             println("Values.size = $size")
-            if(values.size > 0) {
+            if (values.size > 0) {
                 return ConvertedEvent(values[0].toByte(), PinMode.fromString(values[1]),
-                    values[2].toLong(), values[3].toLong())
-            } 
+                        values[2].toLong(), values[3].toLong())
+            }
             return null
         }
     }
