@@ -3,6 +3,7 @@ package networking
 import shakram02.blue.BlueClient
 import shakram02.blue.BlueServer
 
+
 class ArduinoChannel(listenerIp: String, listenerPort: Int) {
     private val server = BlueServer()
     private val client = BlueClient()

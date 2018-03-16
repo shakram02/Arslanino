@@ -43,8 +43,13 @@ class DeviceEventEmitter : IODeviceEventListener {
      * @param event the event
      */
     override fun onPinChange(event: IOEvent) {
+
         val pin = event.pin
+        
         if (pin.mode == Pin.Mode.ANALOG) return // TODO Implement this later (Reading analog values)
+
+        val idx = pin.getIndex()
+        println("Index = $idx")
 
         onPinChange(converter.convert(event))
     }
@@ -58,5 +63,10 @@ class DeviceEventEmitter : IODeviceEventListener {
     override fun onMessageReceive(event: IOEvent, message: String?) {
         println("Message Received:" + message)  // TODO this will need to be implemented
     }
+
+    fun addPinMapping(myPin: Byte, theirPin: Byte) {
+        converter.addPinMapping(myPin, theirPin)
+    }
+
 
 }
