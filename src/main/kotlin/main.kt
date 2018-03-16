@@ -92,5 +92,6 @@ fun main(args: Array<String>) {
 
     println("Hit enter to terminate")
     readLine()
+
     device.stop()
 }
