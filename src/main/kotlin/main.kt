@@ -2,6 +2,7 @@
 
 import control.ConvertedEvent
 import control.DeviceEventEmitter
+import control.DeviceEventReceiver
 import networking.ArduinoChannel
 import org.firmata4j.Pin
 import org.firmata4j.firmata.FirmataDevice
@@ -56,25 +57,21 @@ fun main(args: Array<String>) {
     val device = FirmataDevice(serialPortName) // construct the Firmata device instance using the name of a port
     val emitter = DeviceEventEmitter()
     val arduino = ArduinoChannel(ip, portNumber)
+    val eventReceiver = DeviceEventReceiver(device)
 
     var connected = false
     arduino.onConnected += { connected = true }
     emitter.onPinChange += { e ->
-        if (connected) {
+        if (!connected) {
             arduino.send(e.serialize())
         }
     }
 
     emitter.onStop += { println("Stopped") }
     arduino.onReceived += { e ->
-        run {
-            val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
-            println(receivedConverted)
-
-            val pin = device.getPin(receivedConverted.pinNumber.toInt())
-            pin.mode = receivedConverted.mode.toFirmataMode()
-            pin.value = receivedConverted.value
-        }
+        val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
+        println(receivedConverted)
+        eventReceiver.execute(receivedConverted)
     }
 
     println("Press enter to connect...")
@@ -95,5 +92,6 @@ fun main(args: Array<String>) {
 
     println("Hit enter to terminate")
     readLine()
+
     device.stop()
 }
