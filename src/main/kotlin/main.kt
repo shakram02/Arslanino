@@ -8,8 +8,8 @@ import org.firmata4j.firmata.FirmataDevice
 
 
 fun main(args: Array<String>) {
-    if (args.isNotEmpty() && args.size != 5) {
-        println("Usage\nremoteduino SERIAL-PORT LOCAL-IP LOCAL-PORT REMOTE-IP REMOTE-PORT")
+    if (args.isNotEmpty() && args.size != 6) {
+        println("Usage\nremoteduino SERIAL-PORT LOCAL-IP LOCAL-PORT REMOTE-IP REMOTE-PORT IS-SENDER?(Y/N) -Default N-")
         println("defaults: /dev/ttyACM0 localhost 55555")
         return
     }
@@ -45,56 +45,54 @@ fun main(args: Array<String>) {
         args[4].toInt()
     }
 
+    val isTransmitter: Boolean = if (args.isEmpty()) {
+        true
+    } else {
+        args[5].toUpperCase() == "Y"
+    }
+
 
     // TODO: on the other end, those bytes are inserted to the parser
     val device = FirmataDevice(serialPortName) // construct the Firmata device instance using the name of a port
     val emitter = DeviceEventEmitter()
-
-
     val arduino = ArduinoChannel(ip, portNumber)
 
-
-    println("My port: $portNumber")
-    println("My serial port: $serialPortName")
-
-
-    // Create mapping for pin numbers
-
-
+    var connected = false
+    arduino.onConnected += { connected = true }
     emitter.onPinChange += { e ->
-        println("Sending to remote $e")
-        arduino.send(e.serialize())
+        if (connected) {
+            arduino.send(e.serialize())
+        }
     }
 
     emitter.onStop += { println("Stopped") }
-    println("Press enter to connect")
+    arduino.onReceived += { e ->
+        run {
+            val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
+            println(receivedConverted)
+
+            val pin = device.getPin(receivedConverted.pinNumber.toInt())
+            pin.mode = receivedConverted.mode.toFirmataMode()
+            pin.value = receivedConverted.value
+        }
+    }
+
+    println("Press enter to connect...")
     readLine()
+
     arduino.connect(remoteIp, remotePort)
 
     device.addEventListener(emitter)
     device.start()
     device.ensureInitializationIsDone()
 
-    if (serialPortName == "/dev/ttyUSB0") {
+    if (isTransmitter) {
         emitter.addPinMapping(4, 13)
         val pin = device.getPin(4)
         pin.mode = Pin.Mode.INPUT
-        println("My pin is 4")
-
-    } else {
-        arduino.onReceived += { e ->
-            run {
-                val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
-                println(receivedConverted)
-
-                val pin = device.getPin(receivedConverted.pinNumber.toInt())
-                pin.mode = receivedConverted.mode.toFirmataMode()
-                pin.value = receivedConverted.value
-            }
-        }
-
-        println("My pin is 13")
+        println("[Transmitter Mode - Pin 4]")
     }
+
     println("Hit enter to terminate")
     readLine()
     device.stop()
