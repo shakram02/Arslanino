@@ -1,6 +1,5 @@
 package control
 
-import kotlinx.coroutines.experimental.channels.NULL_VALUE
 import org.firmata4j.IOEvent
 import org.firmata4j.Pin
 import java.lang.IllegalArgumentException
