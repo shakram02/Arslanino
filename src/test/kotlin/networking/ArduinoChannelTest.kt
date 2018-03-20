@@ -14,11 +14,11 @@ class ArduinoChannelTest {
         var receiveEstablished = false
         var receiveCount = 0
         val clientOne = ArduinoChannel(localhost, portOne)
-        clientOne.onConnected += { transEstablished = true }
+        clientOne.onConnectedToRemote += { transEstablished = true }
         clientOne.onReceived += { receiveCount++ }
 
         val remoteSide = ArduinoChannel(localhost, portRemote)
-        remoteSide.onConnected += { receiveEstablished = true }
+        remoteSide.onConnectedToRemote += { receiveEstablished = true }
         remoteSide.onReceived += { receiveCount++ }
 
         remoteSide.connect(localhost, portOne)

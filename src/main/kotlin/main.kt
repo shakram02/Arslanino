@@ -60,14 +60,22 @@ fun main(args: Array<String>) {
     val eventReceiver = DeviceEventReceiver(device)
 
     var connected = false
-    arduino.onConnected += { connected = true }
     emitter.onPinChange += { e ->
-        if (!connected) {
+        if (connected) {
             arduino.send(e.serialize())
         }
     }
-
     emitter.onStop += { println("Stopped") }
+
+    arduino.onConnectedToRemote += {
+        connected = true
+        println("Connected")
+    }
+
+    arduino.onClientConnected += {
+        println("A client connected")
+    }
+
     arduino.onReceived += { e ->
         val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
         println(receivedConverted)
