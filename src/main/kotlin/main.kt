@@ -60,7 +60,7 @@ fun main(args: Array<String>) {
     val eventReceiver = DeviceEventReceiver(device)
 
     var connected = false
-    arduino.onConnected += { connected = true }
+    arduino.onClientConnected += { connected = true }
     emitter.onPinChange += { e ->
         if (!connected) {
             arduino.send(e.serialize())
