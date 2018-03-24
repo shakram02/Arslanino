@@ -52,44 +52,43 @@ fun main(args: Array<String>) {
         args[5].toUpperCase() == "Y"
     }
 
-
-    // TODO: on the other end, those bytes are inserted to the parser
-    val device = FirmataDevice(serialPortName) // construct the Firmata device instance using the name of a port
+    val device = FirmataDevice(serialPortName)
     val emitter = DeviceEventEmitter()
-    val arduino = ArduinoChannel(ip, portNumber)
+    val commChannel = ArduinoChannel(ip, portNumber)
     val eventReceiver = DeviceEventReceiver(device)
 
     var connected = false
     emitter.onPinChange += { e ->
         if (connected) {
-            arduino.send(e.serialize())
+            commChannel.send(e.serialize())
         }
     }
+
     emitter.onStop += { println("Stopped") }
 
-    arduino.onConnectedToRemote += {
+    commChannel.onConnectedToRemote += {
         connected = true
         println("Connected")
     }
 
-    arduino.onClientConnected += {
+    commChannel.onClientConnected += {
         println("A client connected")
     }
 
-    arduino.onReceived += { e ->
+    commChannel.onReceived += { e ->
         val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
         println(receivedConverted)
         eventReceiver.execute(receivedConverted)
     }
 
-    println("Press enter to connect...")
-    readLine()
-
-    arduino.connect(remoteIp, remotePort)
-
     device.addEventListener(emitter)
     device.start()
     device.ensureInitializationIsDone()
+
+    println("Press enter to connect...")
+    readLine()
+
+    commChannel.connect(remoteIp, remotePort)
 
     if (isTransmitter) {
         emitter.addPinMapping(4, 13)
