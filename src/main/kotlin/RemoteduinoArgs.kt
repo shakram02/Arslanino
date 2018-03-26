@@ -5,22 +5,22 @@ class RemoteduinoArgs(parser: ArgParser) {
     val serialPort by parser.positional("SERIALPORT", help = "Name of Arduino's serial port")
 
     val localIp by
-    parser.positional("LOCALIP", help = "IP Address of the local device. Default \"localhost\"")
+    parser.storing("-s", "--sourcelIp", help = "IP Address of the local device. Default \"localhost\"")
             .default("localhost")
 
     val localPort by
-    parser.positional("LOCALPORT", help = "Port number of the local device. Default 50001") { toInt() }
+    parser.storing("-t", "--sourcePort", help = "Port number of the local device. Default 50000 [Tx]") { toInt() }
             .default(50000)
 
     val remoteIp by
-    parser.positional("REMOTEIP", help = "IP Address of the remote device. Default \"localhost\"")
+    parser.storing("-d", "--destinationIp", help = "IP Address of the remote device. Default \"localhost\"")
             .default("localhost")
 
     val remotePort by
-    parser.positional("REMOTEPORT", help = "Port number of the remote device. Default 50001") { toInt() }
+    parser.storing("-r", "--destinationPort", help = "Port number of the remote device. Default 50001 [Rx]") { toInt() }
             .default(50001)
 
     val isTestSender by
-    parser.flagging("-t", "--test", help = "Is testing sender device")
+    parser.flagging("-x", "--check", help = "Is testing sender device")
             .default(false)
 }
