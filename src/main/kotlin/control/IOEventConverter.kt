@@ -5,7 +5,6 @@ import org.firmata4j.Pin
 import java.lang.IllegalArgumentException
 
 class IOEventConverter {
-    // TODO: Add pin mapping
     private val pinConverter = HashMap<Byte, Byte>()
 
     fun convert(e: IOEvent): ConvertedEvent {
@@ -18,7 +17,7 @@ class IOEventConverter {
         if (pinConverter.containsKey(convertedPin)) {
             convertedPin = pinConverter[convertedPin] as Byte
         } else {
-            throw IllegalArgumentException("pin $pin.index is not mapped to any pins")
+            throw IllegalArgumentException("pin ${pin.index} is not mapped to any pins")
         }
 
         return convertWithMapping(e, convertedPin)

@@ -6,7 +6,7 @@ import org.firmata4j.Pin
 import shakram02.events.Event
 
 class DeviceEventEmitter : IODeviceEventListener {
-    val onPinChange = Event<ConvertedEvent>()
+    val onSenableEvent = Event<ConvertedEvent>()
     val onStart = Event<Unit>()
     val onStop = Event<Unit>()
     private val converter = IOEventConverter()
@@ -44,9 +44,10 @@ class DeviceEventEmitter : IODeviceEventListener {
      */
     override fun onPinChange(event: IOEvent) {
         val pin = event.pin
+        if (pin.mode == Pin.Mode.OUTPUT) return
         if (pin.mode == Pin.Mode.ANALOG) return // TODO Implement this later (Reading analog values)
 
-        onPinChange(converter.convert(event))
+        onSenableEvent(converter.convert(event))
     }
 
     /**

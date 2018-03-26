@@ -19,7 +19,7 @@ fun main(args: Array<String>) = mainBody {
     val eventReceiver = DeviceEventReceiver(device)
 
     var connected = false
-    emitter.onPinChange += { e ->
+    emitter.onSenableEvent += { e ->
         if (connected) {
             commChannel.send(e.serialize())
         }
@@ -36,12 +36,6 @@ fun main(args: Array<String>) = mainBody {
         println("A client connected")
     }
 
-    commChannel.onReceived += { e ->
-        val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
-        println(receivedConverted)
-        eventReceiver.execute(receivedConverted)
-    }
-
     device.addEventListener(emitter)
     device.start()
     device.ensureInitializationIsDone()
@@ -56,10 +50,17 @@ fun main(args: Array<String>) = mainBody {
         val pin = device.getPin(4)
         pin.mode = Pin.Mode.INPUT
         println("[Transmitter Mode - Pin 4]")
+    } else {
+        commChannel.onReceived += { e ->
+            val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
+            println("Received: $receivedConverted")
+            eventReceiver.execute(receivedConverted)
+        }
     }
 
     println("Hit enter to terminate")
     readLine()
 
     device.stop()
+    commChannel.close()
 }
