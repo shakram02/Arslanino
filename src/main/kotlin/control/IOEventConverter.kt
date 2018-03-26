@@ -30,8 +30,7 @@ class IOEventConverter {
         val outMode: PinMode = when (e.pin.mode) {
             Pin.Mode.INPUT -> PinMode.OUTPUT
             Pin.Mode.ANALOG -> PinMode.PWM
-            Pin.Mode.OUTPUT -> PinMode.INPUT
-            else -> TODO()
+            else -> throw IllegalStateException("${e.pin.mode} can't be converted")
         }
 
         return ConvertedEvent(outPin, outMode, pin.value, e.timestamp)

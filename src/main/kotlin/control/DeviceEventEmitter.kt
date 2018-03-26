@@ -45,7 +45,9 @@ class DeviceEventEmitter : IODeviceEventListener {
     override fun onPinChange(event: IOEvent) {
         val pin = event.pin
         if (pin.mode == Pin.Mode.OUTPUT) return
-        if (pin.mode == Pin.Mode.ANALOG) return // TODO Implement this later (Reading analog values)
+        if (pin.mode == Pin.Mode.ANALOG) {
+            return // TODO Implement this later (Reading analog values)
+        }
 
         onSenableEvent(converter.convert(event))
     }
