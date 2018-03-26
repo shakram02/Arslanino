@@ -2,6 +2,7 @@ package networking
 
 import shakram02.blue.BlueClient
 import shakram02.blue.BlueServer
+import java.nio.channels.AsynchronousCloseException
 
 
 class ArduinoChannel(listenerIp: String, listenerPort: Int) {
@@ -21,5 +22,19 @@ class ArduinoChannel(listenerIp: String, listenerPort: Int) {
 
     fun send(msg: ByteArray) {
         client.send(msg)
+    }
+
+    fun close() {
+        // Exceptions thrown aren't important, they just denote
+        // that a pending operation was force terminated
+        try {
+            server.close()
+        } catch (e: AsynchronousCloseException) {
+        }
+
+        try {
+            client.close()
+        } catch (e: AsynchronousCloseException) {
+        }
     }
 }

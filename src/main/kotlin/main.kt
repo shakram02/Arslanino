@@ -62,4 +62,5 @@ fun main(args: Array<String>) = mainBody {
     readLine()
 
     device.stop()
+    commChannel.close()
 }
