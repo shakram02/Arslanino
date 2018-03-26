@@ -41,6 +41,7 @@ dependencies {
     compile 'com.github.kurbatov:firmata4j:2.3.6'
     compile 'com.github.shakram02:Kt-Events:v0.0.1'
     compile 'com.github.shakram02:Blue:v0.0.3'
+    compile "com.xenomachina:kotlin-argparser:2.0.5"
 }
 
 compileKotlin {

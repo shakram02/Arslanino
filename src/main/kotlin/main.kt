@@ -1,5 +1,7 @@
 @file:JvmName("Main")
 
+import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.mainBody
 import control.ConvertedEvent
 import control.DeviceEventEmitter
 import control.DeviceEventReceiver
@@ -8,53 +10,12 @@ import org.firmata4j.Pin
 import org.firmata4j.firmata.FirmataDevice
 
 
-fun main(args: Array<String>) {
-    if (args.isNotEmpty() && args.size != 6) {
-        println("Usage\nremoteduino SERIAL-PORT LOCAL-IP LOCAL-PORT REMOTE-IP REMOTE-PORT IS-SENDER?(Y/N) -Default N-")
-        println("defaults: /dev/ttyACM0 localhost 55555")
-        return
-    }
+fun main(args: Array<String>) = mainBody {
+    val parsedArgs = ArgParser(args).parseInto(::RemoteduinoArgs)
 
-    val serialPortName: String = if (args.isEmpty()) {
-        "COM3"
-    } else {
-        args[0]
-    }
-
-    val ip: String = if (args.isEmpty()) {
-        "localhost"
-    } else {
-        args[1]
-    }
-
-
-    val portNumber: Int = if (args.isEmpty()) {
-        55555
-    } else {
-        args[2].toInt()
-    }
-
-    val remoteIp: String = if (args.isEmpty()) {
-        "localhost"
-    } else {
-        args[3]
-    }
-
-    val remotePort: Int = if (args.isEmpty()) {
-        55556
-    } else {
-        args[4].toInt()
-    }
-
-    val isTransmitter: Boolean = if (args.isEmpty()) {
-        true
-    } else {
-        args[5].toUpperCase() == "Y"
-    }
-
-    val device = FirmataDevice(serialPortName)
+    val device = FirmataDevice(parsedArgs.serialPort)
     val emitter = DeviceEventEmitter()
-    val commChannel = ArduinoChannel(ip, portNumber)
+    val commChannel = ArduinoChannel(parsedArgs.localIp, parsedArgs.localPort)
     val eventReceiver = DeviceEventReceiver(device)
 
     var connected = false
@@ -88,9 +49,9 @@ fun main(args: Array<String>) {
     println("Press enter to connect...")
     readLine()
 
-    commChannel.connect(remoteIp, remotePort)
+    commChannel.connect(parsedArgs.remoteIp, parsedArgs.remotePort)
 
-    if (isTransmitter) {
+    if (parsedArgs.isTestSender) {
         emitter.addPinMapping(4, 13)
         val pin = device.getPin(4)
         pin.mode = Pin.Mode.INPUT
