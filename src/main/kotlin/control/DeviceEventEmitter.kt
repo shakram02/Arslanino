@@ -6,10 +6,11 @@ import org.firmata4j.Pin
 import shakram02.events.Event
 
 class DeviceEventEmitter : IODeviceEventListener {
-    val onSenableEvent = Event<ConvertedEvent>()
+    val onSendableEvent = Event<ConvertedEvent>()
     val onStart = Event<Unit>()
     val onStop = Event<Unit>()
     private val converter = IOEventConverter()
+    private val registeredAnalogPins = HashSet<Byte>()
 
     init {
         // TODO take mapping object as a parameter
@@ -44,12 +45,19 @@ class DeviceEventEmitter : IODeviceEventListener {
      */
     override fun onPinChange(event: IOEvent) {
         val pin = event.pin
-        if (pin.mode == Pin.Mode.OUTPUT) return
-        if (pin.mode == Pin.Mode.ANALOG) {
-            return // TODO Implement this later (Reading analog values)
+
+        // Those are output events, we don't send them, nor nonsense values
+        if (pin.mode == Pin.Mode.OUTPUT || pin.mode == Pin.Mode.PWM || pin.value < 0) return
+
+
+        // TODO Implement this later (Reading analog values)
+        // Create a hash map for the pins we're interested in, otherwise ignore the value
+        // The event is fired many times per second and will cause lots of traffic if left unnecessarily
+        if (pin.mode == Pin.Mode.ANALOG && !registeredAnalogPins.contains(pin.index)) {
+            return
         }
 
-        onSenableEvent(converter.convert(event))
+        onSendableEvent(converter.convert(event))
     }
 
     /**
@@ -64,5 +72,13 @@ class DeviceEventEmitter : IODeviceEventListener {
 
     fun addPinMapping(myPin: Byte, theirPin: Byte) {
         converter.addPinMapping(myPin, theirPin)
+    }
+
+    fun watchAnalogPin(pinNumber: Byte) {
+        registeredAnalogPins.add(pinNumber)
+    }
+
+    fun unwatchAnalogPin(pinNumber: Byte) {
+        registeredAnalogPins.remove(pinNumber)
     }
 }
