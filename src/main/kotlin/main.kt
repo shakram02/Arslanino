@@ -19,13 +19,16 @@ fun main(args: Array<String>) = mainBody {
     val eventReceiver = DeviceEventReceiver(device)
 
     var connected = false
-    emitter.onSenableEvent += { e ->
+    emitter.onSendableEvent += { e ->
         if (connected) {
-            commChannel.send(e.serialize())
+            println("[Sending] $e")
+            val message = e.serialize()
+            commChannel.send(message)
         }
     }
 
     emitter.onStop += { println("Stopped") }
+
 
     commChannel.onConnectedToRemote += {
         connected = true
@@ -47,13 +50,16 @@ fun main(args: Array<String>) = mainBody {
 
     if (parsedArgs.isTestSender) {
         emitter.addPinMapping(4, 13)
+
+        emitter.watchAnalogPin(14)  // Pin 14 is A0
+        emitter.addPinMapping(14, 9)
         val pin = device.getPin(4)
         pin.mode = Pin.Mode.INPUT
         println("[Transmitter Mode - Pin 4]")
     } else {
         commChannel.onReceived += { e ->
             val receivedConverted = ConvertedEvent.deserialize(e.bytes)!!
-            println("Received: $receivedConverted")
+            println("[Received] $receivedConverted")
             eventReceiver.execute(receivedConverted)
         }
     }
